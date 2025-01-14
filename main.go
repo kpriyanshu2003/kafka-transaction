@@ -15,6 +15,7 @@ import (
 func init() {
 	godotenv.Load()
 	config.SetupDatabase()
+	config.SetupKafkaProducer()
 }
 
 func main() {
@@ -26,6 +27,6 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{AllowOrigins: "*"}))
-		app.Route("/", routes.Routes)
+	app.Route("/", routes.Routes)
 	app.Listen(":" + port)
 }

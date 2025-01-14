@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"example.com/kafka/src/config"
+	"example.com/kafka/src/kafka/producer"
 	"example.com/kafka/src/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -19,17 +21,28 @@ func CreateTransaction(c *fiber.Ctx) error {
 	if err := c.BodyParser(&payload); err != nil {
 		return err
 	}
+	// TODO: Validations
 
 	message := models.Transaction{
-		SendID: payload.Sender_id,
-		RecvID: payload.Receiver_id,
-		Amt:    payload.Amount,
-		Status: "PENDING",
-		Type:   payload.Type,
+		TransactionID: uuid.New(),
+		SendID:        payload.Sender_id,
+		RecvID:        payload.Receiver_id,
+		Amt:           payload.Amount,
+		Status:        "PENDING",
+		Type:          payload.Type,
 	}
 
-	fmt.Println(message)
-	return c.JSON(fiber.Map{"message": "Transaction Created"})
+	jsonMessage, err := json.Marshal(message)
+	if err != nil {
+		fmt.Printf("Failed to marshal JSON: %v\n", err)
+	}
+
+	err = producer.PushTransactionToQueue("wallet.pending", jsonMessage)
+	if err != nil {
+		fmt.Printf("Failed to push transaction to Kafka: %v\n", err)
+	}
+
+	return c.JSON(message)
 }
 
 func GetBalance(c *fiber.Ctx) error {
