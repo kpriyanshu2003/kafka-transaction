@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"fmt"
+
 	"example.com/kafka/src/config"
+	"example.com/kafka/src/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 )
@@ -17,32 +20,25 @@ func CreateTransaction(c *fiber.Ctx) error {
 		return err
 	}
 
-	// message := TransactionMessage{
-	// 	Sender_id:   c.Locals("user").(database.User).UserID,
-	// 	Receiver_id: payload.Receiver_id,
-	// 	Amount:      payload.Amount,
-	// 	Status:      "PENDING",
-	// }
+	message := models.Transaction{
+		SendID: payload.Sender_id,
+		RecvID: payload.Receiver_id,
+		Amt:    payload.Amount,
+		Status: "PENDING",
+		Type:   payload.Type,
+	}
 
-	// jsonMessage, err := json.Marshal(message)
-	// if err != nil {
-	// 	fmt.Printf("Failed to marshal JSON: %v\n", err)
-	// }
-
-	// err = producer.PushTransactionToQueue("wallet.pending", jsonMessage)
-	// if err != nil {
-	// 	fmt.Printf("Failed to push transaction to Kafka: %v\n", err)
-	// }
-
-	return c.JSON(fiber.Map{
-		"message": "Transaction Created",
-	})
+	fmt.Println(message)
+	return c.JSON(fiber.Map{"message": "Transaction Created"})
 }
 
 func GetBalance(c *fiber.Ctx) error {
 	db := config.DB.Db
-
-	user, err := db.Exec("SELECT * FROM users WHERE id = $1", "id")
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(400).JSON(fiber.Map{"error": "id is required"})
+	}
+	user, err := db.Exec("SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
