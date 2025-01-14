@@ -7,5 +7,5 @@ import (
 
 func TransactionRoutes(r fiber.Router) {
 	r.Post("/", controllers.CreateTransaction)
-	r.Get("/", controllers.GetBalance)
+	r.Get("/:id?", controllers.GetBalance)
 }

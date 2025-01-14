@@ -153,8 +153,8 @@ func processTransaction(txn models.Transaction) bool {
 		return false
 	}
 
-	_, err = tx.Exec("INSERT INTO transactions (send_id, recv_id, amt, status, type) VALUES ($1, $2, $3, $4, $5)",
-		txn.SendID, txn.RecvID, txn.Amt, "DONE", txn.Type)
+	_, err = tx.Exec("INSERT INTO transactions (transaction_id, sender_id, receiver_id, amount, status, txn_type) VALUES ($1, $2, $3, $4, $5, $6)",
+		txn.TransactionID, txn.SendID, txn.RecvID, txn.Amt, "SUCCESS", txn.Type)
 	if err != nil {
 		log.Println("Failed to insert transaction:", err)
 		tx.Rollback()

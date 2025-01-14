@@ -51,9 +51,11 @@ func GetBalance(c *fiber.Ctx) error {
 	if id == "" {
 		return c.Status(400).JSON(fiber.Map{"error": "id is required"})
 	}
-	user, err := db.Exec("SELECT * FROM users WHERE id = $1", id)
+	var user models.User
+	query := "SELECT * FROM users WHERE user_id = $1"
+	err := db.QueryRow(query, id).Scan(&user.UserID, &user.Email, &user.Balance)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.JSON(user)
+	return c.JSON(&user)
 }
